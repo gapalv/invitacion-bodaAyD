@@ -436,63 +436,84 @@
         </div>
     </div>
 </div>
-
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+  // Importar las funciones necesarias de Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
-        authDomain: "bodaayd-595cb.firebaseapp.com",
-        databaseURL: "https://bodaayd-595cb-default-rtdb.firebaseio.com",
-        projectId: "bodaayd-595cb",
-        storageBucket: "bodaayd-595cb.firebasestorage.app",
-        messagingSenderId: "197666624444",
-        appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
-        measurementId: "G-EQVJ9C5CXB"
-      };
+  // Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
+    authDomain: "bodaayd-595cb.firebaseapp.com",
+    databaseURL: "https://bodaayd-595cb-default-rtdb.firebaseio.com",
+    projectId: "bodaayd-595cb",
+    storageBucket: "bodaayd-595cb.firebasestorage.app",
+    messagingSenderId: "197666624444",
+    appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
+    measurementId: "G-EQVJ9C5CXB"
+  };
 
-    // Inicializa Firebase
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const analytics = getAnalytics(app);
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
 
-    // Asegúrate de que las funciones están definidas antes de ser usadas
+  // Función para verificar el registro
+  function verificarRegistro(event) {
+    event.preventDefault();  // Evitar el comportamiento por defecto del formulario
 
-function verificarRegistro(nombre, telefono) {
-    const ref = database.ref('invitados');  // Referencia a la base de datos
-    ref.orderByChild("telefono").equalTo(telefono).once("value", function(snapshot) {
+    const nombre = document.getElementById("nombre").value;
+    const telefono = document.getElementById("telefono").value;
+    const refIn = ref(database, 'invitados');  // Referencia a la base de datos
+
+    // Usar get() en lugar de once()
+    get(refIn)
+      .then(snapshot => {
         if (snapshot.exists()) {
-            // Si el teléfono ya está registrado
-            document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
-            document.getElementById("enviar_rsv").disabled = true;  // Desactivar el botón
-        } else {
-            // Si no está registrado, proceder a guardar
-            const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
-            guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
+          const datos = snapshot.val();
+          for (const key in datos) {
+            if (datos[key].telefono === telefono) {
+              document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
+              document.getElementById("enviar_rsv").disabled = true;
+              return;
+            }
+          }
         }
-    });
-}
 
-// Asegúrate de que esta función esté definida para guardar los datos
-function guardarRegistro(nombre, telefono, personas, asistencia) {
-    const ref = database.ref('invitados');  // Referencia a la base de datos
-    const nuevoRegistro = ref.push();  // Crear un nuevo registro
-    nuevoRegistro.set({
-        nombre: nombre,
-        telefono: telefono,
-        personas: personas,
-        asistencia: asistencia
+        // Si no está registrado, guardar los datos
+        const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
+        guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
+      })
+      .catch(error => {
+        console.error("Error al verificar el registro: ", error);
+      });
+  }
+
+  // Función para guardar el registro en Firebase
+  function guardarRegistro(nombre, telefono, personas, asistencia) {
+    const refIn = ref(database, 'invitados');
+    const nuevoRegistro = push(refIn);
+    set(nuevoRegistro, {
+      nombre: nombre,
+      telefono: telefono,
+      personas: personas,
+      asistencia: asistencia
     }).then(() => {
-        document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
-        document.getElementById("rsv").reset();  // Limpiar el formulario
+      document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
+      document.getElementById("rsv").reset();
     }).catch(error => {
-        document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
+      document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
+      console.error("Error al guardar el registro: ", error);
     });
-}
+  }
+  // Agregar el manejador de envío del formulario
+  document.getElementById("rsv").addEventListener("submit", function (event) {
+    event.preventDefault();  // Prevenir el envío por defecto
+    const nombre = document.getElementById("nombre").value;
+    const telefono = document.getElementById("telefono").value;
+    verificarRegistro(nombre, telefono);  // Verificar si ya está registrado antes de guardar
+  });
+    
 </script>
-
 <!-- Modal para confirmación de éxito -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
