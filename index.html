@@ -438,8 +438,8 @@
 </div>
 
 <script type="module">
-    import { getDatabase, ref, set, orderByChild, equalTo, once } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 
     const firebaseConfig = {
@@ -451,12 +451,20 @@
         messagingSenderId: "197666624444",
         appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
         measurementId: "G-EQVJ9C5CXB"
-    };
+      };
 
     // Inicializa Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const analytics = getAnalytics(app);
+
+    const dbRef = ref(database, 'invitados');
+      set(dbRef, {
+        nombre: "Juan Pérez",
+        telefono: "123456789",
+        personas: 3,
+        asistencia: "Asistiré"
+      });
 </script>
 
 <script>
