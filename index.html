@@ -949,11 +949,18 @@
     <script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/main.js"></script>
     <!--script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/rsvp.js"></script-->
     <!--rsvp-->
-    <!-- Incluir Firebase JS SDK -->
+    <!-- Cargar Firebase JS SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js"></script>
 
-<script>
+
+<script type="module">
+  // Importar las funciones necesarias de Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, set, push, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+
   // Configuración de Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
@@ -967,12 +974,13 @@
   };
 
   // Inicializar Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const database = firebase.database(app);
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app); // Obtener la referencia a la base de datos
+  const analytics = getAnalytics(app);
 
-  // Función para verificar si el teléfono ya existe en Firebase y guardar datos
+  // Función para verificar y guardar el registro
   function verificarRegistro(event) {
-    event.preventDefault();  // Evitar el comportamiento predeterminado del formulario
+    event.preventDefault();  // Evitar que el formulario se envíe
 
     // Obtener los datos del formulario
     const nombre = document.getElementById('nombre').value;
@@ -980,45 +988,42 @@
     const personas = document.getElementById('personas').value;
     const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
 
-    // Obtener la referencia a la base de datos en Firebase
-    const refIn = firebase.database().ref('invitados');
+    // Referencia a la base de datos en Firebase
+    const refIn = ref(database, 'invitados');
 
-    // Verificar si el teléfono ya existe en la base de datos
-    refIn.once('value')
-      .then(snapshot => {
-        if (snapshot.exists()) {
-          const invitados = snapshot.val();
-          for (let key in invitados) {
-            if (invitados[key].telefono === telefono) {
-              document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
-              return;
-            }
+    // Verificar si el teléfono ya está registrado
+    get(refIn).then((snapshot) => {
+      if (snapshot.exists()) {
+        const invitados = snapshot.val();
+        for (let key in invitados) {
+          if (invitados[key].telefono === telefono) {
+            document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
+            return;
           }
         }
+      }
 
-        // Si el teléfono no está registrado, guardamos los datos en Firebase
-        const nuevoRegistroRef = refIn.push();
-        nuevoRegistroRef.set({
-          nombre: nombre,
-          telefono: telefono,
-          personas: personas,
-          asistencia: asistencia
-        })
-        .then(() => {
-          document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
-          document.getElementById("rsv").reset(); // Resetea el formulario
-        })
-        .catch(error => {
-          document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
-          console.error("Error al guardar el registro:", error);
-        });
-      })
-      .catch(error => {
-        document.getElementById("mensaje").innerHTML = "Hubo un error al verificar tu teléfono. Intenta nuevamente.";
-        console.error("Error al verificar el teléfono:", error);
+      // Si no está registrado, guardar los datos
+      const nuevoRegistroRef = push(refIn);
+      set(nuevoRegistroRef, {
+        nombre: nombre,
+        telefono: telefono,
+        personas: personas,
+        asistencia: asistencia
+      }).then(() => {
+        document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
+        document.getElementById("rsv").reset(); // Resetear el formulario
+      }).catch((error) => {
+        document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
+        console.error("Error al guardar el registro:", error);
       });
+    }).catch((error) => {
+      document.getElementById("mensaje").innerHTML = "Hubo un error al verificar tu teléfono. Intenta nuevamente.";
+      console.error("Error al verificar el teléfono:", error);
+    });
   }
 </script>
+
 
 
     <script>
