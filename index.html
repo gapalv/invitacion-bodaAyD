@@ -438,9 +438,9 @@
 </div>
 
 <script type="module">
-    // Importar las funciones necesarias de Firebase
+  // Importar las funciones necesarias de Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, set, push, get, child, orderByChild, equalTo, once } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+  import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
   // Configuración de Firebase
   const firebaseConfig = {
@@ -464,17 +464,15 @@
 
     const nombre = document.getElementById("nombre").value;
     const telefono = document.getElementById("telefono").value;
-      console.log("Verificando registro para teléfono: ", telefono);
-    const refIn = ref(database, 'invitados');  // Referencia correcta a la base de datos
+    const refIn = ref(database, 'invitados');  // Referencia a la base de datos
 
-    // Verificar si el teléfono ya está registrado
+    // Usar get() en lugar de once()
     get(refIn)
       .then(snapshot => {
         if (snapshot.exists()) {
           const datos = snapshot.val();
           for (const key in datos) {
             if (datos[key].telefono === telefono) {
-                console.log("Teléfono ya registrado.");
               document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
               document.getElementById("enviar_rsv").disabled = true;
               return;
@@ -484,7 +482,6 @@
 
         // Si no está registrado, guardar los datos
         const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
-          console.log("Guardando datos...");
         guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
       })
       .catch(error => {
@@ -494,7 +491,6 @@
 
   // Función para guardar el registro en Firebase
   function guardarRegistro(nombre, telefono, personas, asistencia) {
-      console.log("Guardando el registro en Firebase...");
     const refIn = ref(database, 'invitados');
     const nuevoRegistro = push(refIn);
     set(nuevoRegistro, {
@@ -503,7 +499,6 @@
       personas: personas,
       asistencia: asistencia
     }).then(() => {
-        console.log("Registro guardado exitosamente.");
       document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
       document.getElementById("rsv").reset();
     }).catch(error => {
@@ -511,7 +506,6 @@
       console.error("Error al guardar el registro: ", error);
     });
   }
-
   // Agregar el manejador de envío del formulario
   document.getElementById("rsv").addEventListener("submit", function (event) {
     event.preventDefault();  // Prevenir el envío por defecto
@@ -1032,7 +1026,7 @@
         src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/magnific-popup-options.js"></script>
     <!-- Main JS (Do not remove) -->
     <script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/main.js"></script>
-    <script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/rsvp.js"></script>
+    <!--script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/rsvp.js"></script-->
     <script>
         document.getElementById('rsv').addEventListener('submit', function (event) {
             console.log('Asistencia:', document.querySelector('input[name="asistencia"]:checked').value);
