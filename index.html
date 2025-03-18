@@ -406,7 +406,7 @@
         </div>
         <div class="row animate-box">
             <div class="col-md-10 col-md-offset-1">
-                <form class="form-inline rsvp-form" id="rsv" onsubmit="verificarRegistro(event)">
+                <form class="form-inline rsvp-form" id="rsv" onsubmit="verificarRegistro()">
 
                     <div class="form-group">
                         <label for="nombre" class="sr-only">Nombre(s)</label>
@@ -436,6 +436,62 @@
         </div>
     </div>
 </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
+        authDomain: "bodaayd-595cb.firebaseapp.com",
+        databaseURL: "https://bodaayd-595cb-default-rtdb.firebaseio.com",
+        projectId: "bodaayd-595cb",
+        storageBucket: "bodaayd-595cb.firebasestorage.app",
+        messagingSenderId: "197666624444",
+        appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
+        measurementId: "G-EQVJ9C5CXB"
+      };
+
+    // Inicializa Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const analytics = getAnalytics(app);
+
+    // Asegúrate de que las funciones están definidas antes de ser usadas
+
+function verificarRegistro(nombre, telefono) {
+    const ref = database.ref('invitados');  // Referencia a la base de datos
+    ref.orderByChild("telefono").equalTo(telefono).once("value", function(snapshot) {
+        if (snapshot.exists()) {
+            // Si el teléfono ya está registrado
+            document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
+            document.getElementById("enviar_rsv").disabled = true;  // Desactivar el botón
+        } else {
+            // Si no está registrado, proceder a guardar
+            const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
+            guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
+        }
+    });
+}
+
+// Asegúrate de que esta función esté definida para guardar los datos
+function guardarRegistro(nombre, telefono, personas, asistencia) {
+    const ref = database.ref('invitados');  // Referencia a la base de datos
+    const nuevoRegistro = ref.push();  // Crear un nuevo registro
+    nuevoRegistro.set({
+        nombre: nombre,
+        telefono: telefono,
+        personas: personas,
+        asistencia: asistencia
+    }).then(() => {
+        document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
+        document.getElementById("rsv").reset();  // Limpiar el formulario
+    }).catch(error => {
+        document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
+    });
+}
+</script>
 
 <!-- Modal para confirmación de éxito -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -948,84 +1004,6 @@
     <!-- Main JS (Do not remove) -->
     <script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/main.js"></script>
     <!--script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/rsvp.js"></script-->
-    <!--rsvp-->
-    <!-- Cargar Firebase JS SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js"></script>
-
-
-<script type="module">
-  // Importar las funciones necesarias de Firebase SDK
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, set, push, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
-
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
-    authDomain: "bodaayd-595cb.firebaseapp.com",
-    databaseURL: "https://bodaayd-595cb-default-rtdb.firebaseio.com",
-    projectId: "bodaayd-595cb",
-    storageBucket: "bodaayd-595cb.firebasestorage.app",
-    messagingSenderId: "197666624444",
-    appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
-    measurementId: "G-EQVJ9C5CXB"
-  };
-
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app); // Obtener la referencia a la base de datos
-  const analytics = getAnalytics(app);
-
-  // Función para verificar y guardar el registro
-  function verificarRegistro(event) {
-    event.preventDefault();  // Evitar que el formulario se envíe
-
-    // Obtener los datos del formulario
-    const nombre = document.getElementById('nombre').value;
-    const telefono = document.getElementById('telefono').value;
-    const personas = document.getElementById('personas').value;
-    const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
-
-    // Referencia a la base de datos en Firebase
-    const refIn = ref(database, 'invitados');
-
-    // Verificar si el teléfono ya está registrado
-    get(refIn).then((snapshot) => {
-      if (snapshot.exists()) {
-        const invitados = snapshot.val();
-        for (let key in invitados) {
-          if (invitados[key].telefono === telefono) {
-            document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
-            return;
-          }
-        }
-      }
-
-      // Si no está registrado, guardar los datos
-      const nuevoRegistroRef = push(refIn);
-      set(nuevoRegistroRef, {
-        nombre: nombre,
-        telefono: telefono,
-        personas: personas,
-        asistencia: asistencia
-      }).then(() => {
-        document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
-        document.getElementById("rsv").reset(); // Resetear el formulario
-      }).catch((error) => {
-        document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
-        console.error("Error al guardar el registro:", error);
-      });
-    }).catch((error) => {
-      document.getElementById("mensaje").innerHTML = "Hubo un error al verificar tu teléfono. Intenta nuevamente.";
-      console.error("Error al verificar el teléfono:", error);
-    });
-  }
-</script>
-
-
-
     <script>
         document.getElementById('rsv').addEventListener('submit', function (event) {
             console.log('Asistencia:', document.querySelector('input[name="asistencia"]:checked').value);
