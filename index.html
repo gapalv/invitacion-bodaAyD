@@ -406,115 +406,26 @@
         </div>
         <div class="row animate-box">
             <div class="col-md-10 col-md-offset-1">
-                <form class="form-inline rsvp-form" id="rsv"
-                    onsubmit="verificarRegistro(event)">
-                    <div class="form-group">
-                        <label for="nombre" class="sr-only">Nombre(s)</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="number" class="form-control" id="personas" name="personas" placeholder="# de Personas" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="telefono" class="sr-only">Teléfono</label>
-                        <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Teléfono" required>
-                    </div>
-                    <div class="form-group">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="asistencia" id="asistire" value="Asistiré" required>
-                            <label class="form-check-label" for="asistire">Asistiré</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="asistencia" id="noasistire" value="No asistiré" required>
-                            <label class="form-check-label" for="noasistire">No Asistiré</label>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-default btn-block" id="enviar_rsv">ENVIAR</button>
+                <form class="form-inline rsvp-form" id="rsv" onsubmit="verificarRegistro(event)">
+                  <!-- Aquí va tu formulario -->
+                  <input type="text" id="nombre" placeholder="Nombre" required>
+                  <input type="text" id="telefono" placeholder="Teléfono" required>
+                  <input type="number" id="personas" placeholder="Personas" required>
+                  <label>
+                    <input type="radio" name="asistencia" value="Asistiré" checked> Asistiré
+                  </label>
+                  <label>
+                    <input type="radio" name="asistencia" value="No asistiré"> No asistiré
+                  </label>
+                  <button type="submit">Enviar</button>
                 </form>
-                <p id="mensaje"></p> <!-- Aquí se mostrará el mensaje de confirmación -->
+                
+                <p id="mensaje"></p>
+
             </div>
         </div>
     </div>
 </div>
-
-<script type="module">
-  // Importar las funciones necesarias de Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
-    authDomain: "bodaayd-595cb.firebaseapp.com",
-    databaseURL: "https://bodaayd-595cb-default-rtdb.firebaseio.com",
-    projectId: "bodaayd-595cb",
-    storageBucket: "bodaayd-595cb.firebasestorage.app",
-    messagingSenderId: "197666624444",
-    appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
-    measurementId: "G-EQVJ9C5CXB"
-  };
-
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-
-  // Función para verificar el registro
-  function verificarRegistro(event) {
-    event.preventDefault();  // Evitar el comportamiento por defecto del formulario
-
-    const nombre = document.getElementById("nombre").value;
-    const telefono = document.getElementById("telefono").value;
-    const refIn = ref(database, 'invitados');  // Referencia a la base de datos
-
-    // Usar get() en lugar de once()
-    get(refIn)
-      .then(snapshot => {
-        if (snapshot.exists()) {
-          const datos = snapshot.val();
-          for (const key in datos) {
-            if (datos[key].telefono === telefono) {
-              document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
-              document.getElementById("enviar_rsv").disabled = true;
-              return;
-            }
-          }
-        }
-
-        // Si no está registrado, guardar los datos
-        const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
-        guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
-      })
-      .catch(error => {
-        console.error("Error al verificar el registro: ", error);
-      });
-  }
-
-  // Función para guardar el registro en Firebase
-  function guardarRegistro(nombre, telefono, personas, asistencia) {
-    const refIn = ref(database, 'invitados');
-    const nuevoRegistro = push(refIn);
-    set(nuevoRegistro, {
-      nombre: nombre,
-      telefono: telefono,
-      personas: personas,
-      asistencia: asistencia
-    }).then(() => {
-      document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
-      document.getElementById("rsv").reset();
-    }).catch(error => {
-      document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
-      console.error("Error al guardar el registro: ", error);
-    });
-  }
-  // Agregar el manejador de envío del formulario
-  document.getElementById("rsv").addEventListener("submit", function (event) {
-    event.preventDefault();  // Prevenir el envío por defecto
-    const nombre = document.getElementById("nombre").value;
-    const telefono = document.getElementById("telefono").value;
-    verificarRegistro(nombre, telefono);  // Verificar si ya está registrado antes de guardar
-  });
-    
-</script>
 
 <!-- Modal para confirmación de éxito -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -1027,6 +938,82 @@
     <!-- Main JS (Do not remove) -->
     <script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/main.js"></script>
     <!--script src="https://invitafest.com.mx/02_invitaciones/03_gold/01_codigo_central_gold/js/rsvp.js"></script-->
+    <!--rsvp-->
+    <!-- Cargar Firebase JS SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+  // Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDITa6724to_KC4zBY4qViIo-ItXDJUYhk",
+    authDomain: "bodaayd-595cb.firebaseapp.com",
+    databaseURL: "https://bodaayd-595cb-default-rtdb.firebaseio.com",
+    projectId: "bodaayd-595cb",
+    storageBucket: "bodaayd-595cb.firebasestorage.app",
+    messagingSenderId: "197666624444",
+    appId: "1:197666624444:web:89f8f980a775fd843ed1b9",
+    measurementId: "G-EQVJ9C5CXB"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  // Función para verificar el registro
+  function verificarRegistro(event) {
+    event.preventDefault(); // Evita que el formulario se envíe automáticamente
+
+    const nombre = document.getElementById("nombre").value;
+    const telefono = document.getElementById("telefono").value;
+    const refIn = ref(database, 'invitados');  // Referencia a la base de datos
+
+    // Usar get() en lugar de once()
+    get(refIn)
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const datos = snapshot.val();
+          for (const key in datos) {
+            if (datos[key].telefono === telefono) {
+              document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
+              document.getElementById("enviar_rsv").disabled = true;
+              return;
+            }
+          }
+        }
+
+        // Si no está registrado, guardar los datos
+        const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
+        guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
+      })
+      .catch(error => {
+        console.error("Error al verificar el registro: ", error);
+      });
+  }
+
+  // Función para guardar el registro en Firebase
+  function guardarRegistro(nombre, telefono, personas, asistencia) {
+    const refIn = ref(database, 'invitados');
+    const nuevoRegistro = push(refIn);
+    set(nuevoRegistro, {
+      nombre: nombre,
+      telefono: telefono,
+      personas: personas,
+      asistencia: asistencia
+    }).then(() => {
+      document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
+      document.getElementById("rsv").reset();  // Resetea el formulario
+    }).catch(error => {
+      document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
+      console.error("Error al guardar el registro: ", error);
+    });
+  }
+</script>
+
     <script>
         document.getElementById('rsv').addEventListener('submit', function (event) {
             console.log('Asistencia:', document.querySelector('input[name="asistencia"]:checked').value);
