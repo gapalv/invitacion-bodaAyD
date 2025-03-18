@@ -458,54 +458,48 @@
     const database = getDatabase(app);
     const analytics = getAnalytics(app);
 
-    const dbRef = ref(database, 'invitados');
-      set(dbRef, {
-        nombre: "Juan Pérez",
-        telefono: "123456789",
-        personas: 3,
-        asistencia: "Asistiré"
-      });
-</script>
-
-<script>
-    // Función para verificar si el usuario ya está registrado
-    function verificarRegistro() {
-        const nombre = document.getElementById('nombre').value;
-        const telefono = document.getElementById('telefono').value;
-        const personas = document.getElementById('personas').value;
-        const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
-
-        const ref = database.ref('invitados');  // La referencia a la lista de invitados en la base de datos
-        ref.orderByChild("telefono").equalTo(telefono).once("value", function (snapshot) {
-            if (snapshot.exists()) {
-                // Si el teléfono ya está registrado, mostramos un mensaje de confirmación
-                document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
-                document.getElementById("enviar_rsv").disabled = true; // Desactivar el botón de envío
-                $('#alreadyConfirmedModal').modal('show');  // Mostrar modal de ya confirmado
-            } else {
-                // Si no está registrado, guardamos el registro
-                guardarRegistro(nombre, telefono, personas, asistencia);
-            }
-        });
-    }
-
     // Función para guardar el registro en Firebase
-    function guardarRegistro(nombre, telefono, personas, asistencia) {
-        const ref = database.ref('invitados');
-        const nuevoRegistro = ref.push();
-        nuevoRegistro.set({
-            nombre: nombre,
-            telefono: telefono,
-            personas: personas,
-            asistencia: asistencia
-        }).then(() => {
-            document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
-            document.getElementById("rsv").reset();  // Limpiar el formulario
-            $('#confirmationModal').modal('show');  // Mostrar modal de éxito
-        }).catch(error => {
-            document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
-        });
-    }
+  function guardarRegistro(nombre, telefono, personas, asistencia) {
+    const dbRef = ref(database, 'invitados');  // Obtener la referencia a la base de datos
+    const nuevoRegistro = dbRef.push();  // Crear un nuevo nodo en 'invitados'
+
+    // Guardar los datos en Firebase
+    nuevoRegistro.set({
+      nombre: nombre,
+      telefono: telefono,
+      personas: personas,
+      asistencia: asistencia
+    }).then(() => {
+      document.getElementById("mensaje").innerHTML = "¡Gracias por registrarte!";
+      document.getElementById("rsv").reset();  // Limpiar el formulario
+    }).catch(error => {
+      document.getElementById("mensaje").innerHTML = "Hubo un error al registrar tu respuesta. Intenta nuevamente.";
+    });
+  }
+
+  // Función para verificar si el usuario ya está registrado
+  function verificarRegistro(nombre, telefono) {
+    const ref = database.ref('invitados');  // La referencia a la lista de invitados
+    ref.orderByChild("telefono").equalTo(telefono).once("value", function (snapshot) {
+      if (snapshot.exists()) {
+        document.getElementById("mensaje").innerHTML = "Ya te has registrado. ¡Gracias!";
+        document.getElementById("enviar_rsv").disabled = true;  // Desactivar el botón de envío
+      } else {
+        // Si no está registrado, proceder a guardar los datos
+        const asistencia = document.querySelector('input[name="asistencia"]:checked').value;
+        guardarRegistro(nombre, telefono, document.getElementById("personas").value, asistencia);
+      }
+    });
+  }
+
+  // Agregar el manejador de envío del formulario
+  document.getElementById("rsv").addEventListener("submit", function (event) {
+    event.preventDefault();  // Prevenir el envío por defecto
+    const nombre = document.getElementById("nombre").value;
+    const telefono = document.getElementById("telefono").value;
+    verificarRegistro(nombre, telefono);  // Verificar si ya está registrado antes de guardar
+  });
+    
 </script>
 
 <!-- Modal para confirmación de éxito -->
